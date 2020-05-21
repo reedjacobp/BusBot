@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+    <!-- To access the page: http://localhost:8085/busbot_web_server_pkg/busbot.html -->
+    <!-- http://192.168.0.169:8085/busbot_web_server_pkg/busbot.html -->
+    <arg name="name" default="busbot_web_node"/>
+    <arg name="port" default="8085"/> <!-- avoid to use apache default port -->
+    <arg name="webpath" default="www"/> <!-- relative path to the webroot. E.g. place this foloder in the ROS package root dir -->
+    <arg name="use_roswww" default="true" />
+
+
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+
+    <include if="$(arg use_roswww)" file="$(find roswww)/launch/roswww.launch">
+        <arg name="name" value="$(arg name)"/>
+        <arg name="port" value="$(arg port)"/>
+        <arg name="webpath" value="$(arg webpath)"/>
+    </include>
+
+    <!-- We start the Server that speaks with page and with load sensor -->
+    <include file="$(find busbot_systems)/launch/loadfood_start_server.launch"/>
+
+
+
+</launch>
