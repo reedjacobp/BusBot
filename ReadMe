@@ -1,0 +1,124 @@
+BusBot Specifications:
+
+Base Width (outside of left side wheel to outside of right side wheel) - 14.5 in/36.83 cm
+
+Wheel Diameter - 4 in
+Wheel Circumference - 33 cm
+
+Motor Encoder Tick Count Per Revolution (Output Shaft) - 4776.384
+Motor Encoder Tick Count to travel 1 meter - 14964.27409
+
+Much of the work used on this robot was done using NoMachine to make quick changes while the computer was attached to the robot.
+
+To map using gmapping:
+
+	1. Run:
+		$ roslaunch busbot_description urdf_visualize.launch model:='$(find busbot_description)/urdf/busbot.urdf'
+	2. Plug in RPLidar and run:
+		$ roslaunch rplidar_ros rplidar.launch
+	3. Plug in RoboClaw and run:
+		$ roslaunch roboclaw_node roboclaw.launch
+	4. Run:
+		$ roslaunch busbot_mapper busbot_mapper_launch.launch
+
+To localize using amcl:
+
+	1. Run:
+		$ roslaunch busbot_description urdf_visualize.launch model:='$(find busbot_description)/urdf/busbot.urdf'
+	2. Plug in RPLidar and run:
+		$ roslaunch rplidar_ros rplidar.launch
+	3. Plug in RoboClaw and run:
+		$ roslaunch roboclaw_node roboclaw.launch
+	4. Run:
+		$ roslaunch my_amcl_launcher my_amcl_launch.launch 
+	5. Run:
+		$ roslaunch initialize_particles init_particles_caller.launch
+	6. Run:
+		$ rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+
+To navigate:
+
+	1. Run:
+		$  roslaunch busbot_description urdf_visualize.launch model:='$(find busbot_description)/urdf/busbot.urdf'
+	2. Plug in RPLidar and run:
+		$ roslaunch rplidar_ros rplidar.launch
+	3. Plug in RoboClaw and run:
+		$ roslaunch roboclaw_node roboclaw.launch
+	4. Run:
+		$ roslaunch my_move_base_launcher my_move_base_launch_1.launch
+			(if you get an error about map_server node, then comment that portion out in the my_amcl_launch.launch file)
+
+To map using rtabmap:
+
+	1. Run:
+		$  roslaunch busbot_description urdf_visualize.launch model:='$(find busbot_description)/urdf/busbot.urdf'
+	2. Plug in RPLidar and run:
+		$ roslaunch rplidar_ros rplidar.launch
+	3. Plug in RoboClaw and run:
+		$ roslaunch roboclaw_node roboclaw.launch
+	4. Plug in D435i and run:
+		$ roslaunch realsense2_camera rs_camera.launch
+	5. Run:
+		$ roslaunch my_rtab_package my_rtab_package_launch_backup.launch localization:=false
+
+	You can localize by doing the above as well, run:
+		$ roslaunch my_rtab_package my_rtab_package_launch_backup.launch localization:=true
+
+To use load sensor with Arduino:
+
+$ roslaunch busbot_systems load_sensor_start_sub.launch
+$ rostopic echo /load_sensor
+$ rostopic echo /load_sensor_info
+$ rosservice call /load_sensor_calibrate_server "data: false" (must be true or false - adding object means true otherwise false resets tare)
+$ rostopic echo /load_sensor_tared
+
+To launch WebApp:
+
+$ roslaunch busbot_web_server_pkg start_busbot_page.launch
+$ roslaunch busbot_systems load_sensor_start_sub.launch
+$ rosrun busbot_systems dummy_move_to_table_action_server.py
+$ rostopic echo /load_sensor_info
+$ roslaunch roboclaw_node roboclaw.launch
+
+
+**********************
+* FOR REMOTE CONTROL *
+**********************
+
+1. Ensure the following is set on the remote computer:
+
+	$ export ROS_IP=(use the ip address of remote computer)
+	$ export ROS_MASTER_URI=http://(use the ip address of robot computer):11311
+
+2. Ensure the following is set on the robot computer: (use the ip address of robot computer for both)
+
+	$ export ROS_IP=(use the ip address of robot computer)
+	$ export ROS_MASTER_URI=http://(use the ip address of robot computer):11311
+
+3. SSH into the robot computer to launch the LIDAR, RoboClaw, D435i, and URDF
+	$ roslaunch rplidar_ros rplidar.launch
+	$ roslaunch roboclaw_node roboclaw.launch
+	$ roslaunch realsense2_camera rs_camera.launch align_depth:=true unite_imu_method:="linear_interpolation"
+	$ roslaunch busbot_description urdf_visualize.launch model:='$(find busbot_description)/urdf/busbot.urdf'
+
+FOR RTABMAP:
+
+On busbot terminals do the following:
+	$ roslaunch rplidar_ros rplidar.launch
+	$ roslaunch roboclaw_node roboclaw.launch
+	$ roslaunch realsense2_camera rs_camera.launch
+Then on remote terminal do:
+	$ roslaunch busbot_description urdf_visualize.launch model:='$(find busbot_description)/urdf/busbot.urdf'
+Then on busbot terminals do:
+	$ roslaunch my_rtab_package my_rtab_package_launch.launch args:="--delete_db_on_start"
+
+FOR GMAPPING:
+
+On busbot terminals do the following:
+	$ roslaunch rplidar_ros rplidar.launch
+	$ roslaunch roboclaw_node roboclaw.launch
+Then on remote terminal do:
+	$ roslaunch busbot_description urdf_visualize.launch model:='$(find busbot_description)/urdf/busbot.urdf'
+Then on busbot terminals do:
+	$ roslaunch busbot_mapper busbot_mapper_launch.launch
+	$ rosrun map_server map_saver -f name_of_map
